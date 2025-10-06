@@ -13,12 +13,13 @@ This repository contains a simple prototype application that performs speech emo
   - `data/uploads` - stored uploaded audio files
   - `data/results` - recognition JSON results
   - `requirements.txt` - Python dependencies
+  - `models/` - training & inference code and a saved model (not wired into the prototype backend)
+  - `scripts`/ - SQL script for generating DB at postgresql
 - `frontend/` - React (Vite) single-page app
 
   - `src/` - React source code
   - `src/services/api.js` - API wrappers used by the UI
   - `package.json` - dev/start scripts
-- `models/` - training & inference code and a saved model (not wired into the prototype backend)
 
 ## Features
 
