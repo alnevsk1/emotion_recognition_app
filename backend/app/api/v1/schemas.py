@@ -33,8 +33,8 @@ class AudioFileWithStatus(AudioFileInDB):
     recognition_date: Optional[datetime]
 
 class ProbabilitySegment(BaseModel):
-    startms: int
-    endms: int
+    start_ms: int
+    end_ms: int
     probabilities: Dict[str, float]
 
 class FullRecognitionResult(BaseModel):
