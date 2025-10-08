@@ -12,7 +12,7 @@ const FileUpload = ({ onUploadSuccess }) => {
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      alert('Please select a file first!');
+      alert('Сначала выберите файл.');
       return;
     }
     setIsUploading(true);
@@ -22,7 +22,7 @@ const FileUpload = ({ onUploadSuccess }) => {
       setSelectedFile(null); // Reset the input
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('File upload failed.');
+      alert('Неудалось загрузить файл.');
     } finally {
       setIsUploading(false);
     }
@@ -30,10 +30,10 @@ const FileUpload = ({ onUploadSuccess }) => {
 
   return (
     <div>
-      <h2>Upload Audio File</h2>
+      <h3>Загрузка аудио файла</h3>
       <input type="file" accept=".mp3,.wav" onChange={handleFileChange} />
       <button onClick={handleUpload} disabled={isUploading || !selectedFile}>
-        {isUploading ? 'Uploading...' : 'Upload'}
+        {isUploading ? 'Загрузка...' : 'Загрузить'}
       </button>
     </div>
   );

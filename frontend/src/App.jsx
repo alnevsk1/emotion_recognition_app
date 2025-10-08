@@ -17,7 +17,7 @@ const App = () => {
       const response = await getFiles();
       setFiles(response.data);
     } catch (error) {
-      console.error("Failed to fetch files:", error);
+      console.error("Неудалось обработать файлы:", error);
     } finally {
       setIsLoading(false);
     }
@@ -25,46 +25,46 @@ const App = () => {
 
   useEffect(() => {
     fetchFiles();
-    const interval = setInterval(fetchFiles, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   const handleSelectFileForResult = async (file) => {
-    if (file.recognitionstatus === 'success') {
+    if (file.recognition.recognition_status === 'success') {
       try {
-        const resultResponse = await getRecognitionResult(file.fileid);
+        const resultResponse = await getRecognitionResult(file.file_id);
         setSelectedResult(resultResponse.data);
       } catch (error) {
-        console.error("Failed to fetch recognition result:", error);
+        console.error("Неудалось обработать результат распознавания:", error);
+        setSelectedResult(null);
       }
+    } else {
+      setSelectedResult(null);
     }
   };
 
   return (
     <div className="App">
       <header className="app-header">
-        <h1>Speech Emotion Recognition</h1>
+        <h1>Распознавание эмоций в речи</h1>
       </header>
 
       <aside className="sidebar">
         <div className="section-container">
-          <h2>1. Upload Audio</h2>
           <FileUpload onUploadSuccess={fetchFiles} />
         </div>
-        <div className="section-container" style={{ flexGrow: 1 }}>
-          <h2>2. File History</h2>
-          {isLoading && <p>Refreshing file list...</p>}
+        <div className="section-container">
           <FileHistory
             files={files}
             onRecognizeStart={fetchFiles}
             onSelectFile={handleSelectFileForResult}
+            onRefresh={fetchFiles}
+            isLoading={isLoading}
           />
         </div>
       </aside>
 
       <main className="main-content">
-        <div className="section-container plot-container">
-          <h2>3. Emotion Analysis Plot</h2>
+        <div className="plot-container">
+          <h2>Анализ графика эмоций</h2>
           <EmotionPlot recognitionData={selectedResult} />
         </div>
       </main>
