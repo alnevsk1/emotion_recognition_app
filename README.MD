@@ -119,3 +119,9 @@ pytest
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for more details.
+
+## TODO
+
+- Add overall result of recognition in frontend;
+- Train normal model;
+- Add docker file;
