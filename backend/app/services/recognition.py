@@ -9,36 +9,28 @@ from app.db import models
 from app.db.session import SessionLocal
 from app.services import file_handler
 
-from models.emotion_recognition.model_train import CRNNWithAttention
+from transformers import AutoFeatureExtractor, AutoModelForAudioClassification
 
 # CONFIG: Put your model directory here (should contain model.safetensors, config.json, preprocessor_config.json)
-MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'emotion_recognition', 'er_model.pt'))
+MODEL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'emotion_recognition', 'fine-tuned-emotion-model'))
+
 EMOTION_LABELS = ['angry', 'sad', 'neutral', 'positive', 'other']
 NUM_CLASSES = len(EMOTION_LABELS)
-N_MELS = 64
+
+N_MELS = 128
 N_FFT = 1024
 HOP_LENGTH = 512
-SAMPLING_RATE = 16000
+SAMPLING_RATE = 16000  # must match your training config
+
 RESULTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'results'))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(device)
-model = CRNNWithAttention(n_mels=N_MELS, n_classes=NUM_CLASSES)
-ckpt = torch.load(MODEL_PATH, map_location=device)
-model.load_state_dict(ckpt["model_state_dict"])
-model = model.to(device)
-model.eval()
 
 # --- Model & feature extractor ---
-def get_mel_spectrogram(waveform):
-    mel_spec = torchaudio.transforms.MelSpectrogram(
-        sample_rate=SAMPLING_RATE,
-        n_fft=N_FFT,
-        n_mels=N_MELS,
-        hop_length=HOP_LENGTH,
-    )(waveform)
-    mel_spec = torchaudio.transforms.AmplitudeToDB()(mel_spec)
-    return mel_spec
+feature_extractor = AutoFeatureExtractor.from_pretrained(MODEL_DIR)
+model = AutoModelForAudioClassification.from_pretrained(MODEL_DIR)
+model = model.to(device)
+model.eval()
 
 def create_initial_recognition_record(db, file_id):
     existing = db.query(models.AudioEmotionRecognition).filter_by(file_id=file_id).first()
@@ -86,11 +78,12 @@ def run_recognition_pipeline(db, file_id):
         # Resample if necessary
         if sr != SAMPLING_RATE:
             waveform = torchaudio.transforms.Resample(sr, SAMPLING_RATE)(waveform)
+
         # Convert to mono
         if waveform.shape[0] > 1:
             waveform = torch.mean(waveform, dim=0, keepdim=True)
 
-        SEGMENT_SEC = 0.5  # segment length in seconds
+        SEGMENT_SEC = 5  # segment length in seconds
         segment_samples = int(SAMPLING_RATE * SEGMENT_SEC)
         total_samples = waveform.shape[1]
         num_segments = int(np.ceil(total_samples / segment_samples))
@@ -101,15 +94,24 @@ def run_recognition_pipeline(db, file_id):
             start = i * segment_samples
             end = min((i + 1) * segment_samples, total_samples)
             segment_waveform = waveform[:, start:end]
+
             if segment_waveform.shape[1] < segment_samples:
                 segment_waveform = torch.nn.functional.pad(segment_waveform, (0, segment_samples - segment_waveform.shape[1]))
-            # Get Mel spectrogram
-            mel_spec = get_mel_spectrogram(segment_waveform)
-            # Model expects batch dimension and 1 channel
-            feats = mel_spec.unsqueeze(0).to(device)  # [1, 1, n_mels, time]
+
+            audio_input = segment_waveform.squeeze().cpu().numpy()
+            processed = feature_extractor(
+                audio_input,
+                sampling_rate=SAMPLING_RATE,
+                max_length=segment_samples,
+                truncation=True,
+                padding='max_length',
+                return_tensors='pt'
+            )
+
             with torch.no_grad():
-                logits = model(feats)         # [1, NUM_CLASSES]
+                logits = model(**processed.to(device)).logits
                 probs = torch.softmax(logits, dim=1).cpu().numpy()[0]
+
             segments.append({
                 "start_ms": int(start * 1000 / SAMPLING_RATE),
                 "end_ms": int(end * 1000 / SAMPLING_RATE),
