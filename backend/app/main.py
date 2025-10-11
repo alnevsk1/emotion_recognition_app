@@ -4,7 +4,7 @@ from .api.v1 import endpoints
 from .db.session import engine
 from .db import models
 
-# This line creates the database tables based on your models
+# Create table at DB
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Speech Emotion Recognition API")

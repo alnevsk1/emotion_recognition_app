@@ -1,4 +1,3 @@
-# backend/app/api/v1/endpoints.py
 import uuid
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
@@ -36,7 +35,6 @@ def request_recognition(file_id: uuid.UUID, background_tasks: BackgroundTasks, d
     # Update status to "in_progress" immediately
     services.recognition.update_recognition_status(db=db, file_id=file_id, status="in_progress")
     
-    # Run the model in the background
     background_tasks.add_task(services.recognition.run_recognition_pipeline, db=db, file_id=file_id)
     
     return {"message": "Recognition process started."}
