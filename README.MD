@@ -122,6 +122,7 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 
 ## TODO
 
-- Add higlight of emotions on plot;
+- Add zoom ability on plot;
+- Add normal fuzzy logic in backend;
 - Configure normal .env file;
 - Add docker file;
