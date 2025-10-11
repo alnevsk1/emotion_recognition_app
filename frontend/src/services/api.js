@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8000/api/v1', // Your backend URL
+  baseURL: 'http://localhost:8000/api/v1', // Backend URL
   headers: {
     'Content-Type': 'application/json',
   },
@@ -28,4 +28,8 @@ export const startRecognition = (fileId) => {
 
 export const getRecognitionResult = (fileId) => {
   return apiClient.get(`/files/${fileId}/recognition`);
+};
+
+export const getAudioUrl = (fileId) => {
+  return `${apiClient.defaults.baseURL}/files/${fileId}/audio`;
 };

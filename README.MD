@@ -122,6 +122,6 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 
 ## TODO
 
-- Add overall result of recognition in frontend;
-- Train normal model;
+- Add higlight of emotions on plot;
+- Configure normal .env file;
 - Add docker file;

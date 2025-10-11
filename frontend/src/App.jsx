@@ -9,6 +9,7 @@ import './assets/styles.css';
 const App = () => {
   const [files, setFiles] = useState([]);
   const [selectedResult, setSelectedResult] = useState(null);
+  const [selectedFileId, setSelectedFileId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchFiles = async () => {
@@ -32,12 +33,15 @@ const App = () => {
       try {
         const resultResponse = await getRecognitionResult(file.file_id);
         setSelectedResult(resultResponse.data);
+        setSelectedFileId(file.file_id);
       } catch (error) {
         console.error("Неудалось обработать результат распознавания:", error);
         setSelectedResult(null);
+        setSelectedFileId(null);
       }
     } else {
       setSelectedResult(null);
+      setSelectedFileId(null);
     }
   };
 
@@ -65,7 +69,7 @@ const App = () => {
       <main className="main-content">
         <div className="plot-container">
           <h2>Анализ графика эмоций</h2>
-          <EmotionPlot recognitionData={selectedResult} />
+          <EmotionPlot recognitionData={selectedResult} fileId={selectedFileId} />
         </div>
       </main>
     </div>

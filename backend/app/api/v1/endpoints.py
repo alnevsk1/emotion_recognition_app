@@ -3,6 +3,8 @@ import uuid
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
+from fastapi.responses import FileResponse
+import os
 
 from app.db.session import get_db
 from app import services
@@ -45,3 +47,10 @@ def get_recognition_result(file_id: uuid.UUID, db: Session = Depends(get_db)):
     if not result:
         raise HTTPException(status_code=404, detail="Recognition result not found or not complete.")
     return result
+
+@router.get("/files/{file_id}/audio")
+def get_audio_file_data(file_id: uuid.UUID, db: Session = Depends(get_db)):
+    audio_file = services.file_handler.get_audio_file_by_id(db=db, file_id=file_id)
+    if not audio_file or not os.path.exists(audio_file.file_path):
+        raise HTTPException(status_code=404, detail="Audio file not found.")
+    return FileResponse(audio_file.file_path, media_type=f"audio/{audio_file.file_extension}")
