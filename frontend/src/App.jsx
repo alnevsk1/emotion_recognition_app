@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import FileUpload from './components/FileUpload';
 import FileHistory from './components/FileHistory';

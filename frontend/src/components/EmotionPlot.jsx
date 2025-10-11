@@ -1,4 +1,3 @@
-// src/components/EmotionPlot.jsx
 import React, { useState, useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import { getAudioUrl } from '../services/api';
@@ -15,12 +14,11 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-// Emotion colors and translations (no changes)
 const EMOTION_COLORS = {
     angry: 'rgba(255, 99, 132, 1)',
     sad: 'rgba(54, 162, 235, 1)',
     neutral: 'rgba(201, 203, 207, 1)',
-    positive: 'rgba(75, 192, 192, 1)',
+    positive: 'rgba(75, 192, 75, 1)',
     other: 'rgba(153, 102, 255, 1)',
 };
 
@@ -45,12 +43,10 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
     const datasets = useMemo(() => {
         const emotions = Object.keys(recognitionData.segments[0].probabilities);
         return emotions.map((emotion, index) => {
-            // The original, full-opacity color
             const originalColor = EMOTION_COLORS[emotion] || 'rgba(0,0,0,1)';
             const isHovered = index === hoveredDatasetIndex;
             const isAnotherHovered = hoveredDatasetIndex !== null && !isHovered;
             
-            // This color will be used for the line on the chart
             let lineBorderColor = originalColor;
             if (isAnotherHovered) {
                 const rgb = originalColor.match(/\d+/g).slice(0, 3).join(', ');
@@ -61,9 +57,8 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
                 label: EMOTION_TRANSLATIONS[emotion] || emotion,
                 data: recognitionData.segments.map(s => s.probabilities[emotion]),
                 fill: false,
-                // 1. Set line color and custom property
-                borderColor: lineBorderColor, // Use the dynamic color for the line itself
-                originalColor: originalColor, // Store the permanent color for legend/tooltips
+                borderColor: lineBorderColor, 
+                originalColor: originalColor, 
                 borderWidth: isHovered ? 4 : 2,
                 pointRadius: 0,
             };
@@ -83,7 +78,6 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
             }
         },
         plugins: {
-            // 2. Configure the legend to use the original color
             legend: {
                 position: 'top',
                 labels: {
@@ -92,14 +86,13 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
                         originalLabels.forEach(label => {
                             const dataset = chart.data.datasets[label.datasetIndex];
                             if (dataset && dataset.originalColor) {
-                                label.fillStyle = dataset.originalColor; // Use original color for the legend box
+                                label.fillStyle = dataset.originalColor; 
                             }
                         });
                         return originalLabels;
                     }
                 }
             },
-            // 3. Configure the tooltip to use the original color
             tooltip: {
                 enabled: true,
                 usePointStyle: true,

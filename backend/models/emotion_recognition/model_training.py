@@ -18,14 +18,13 @@ class DushaDataset(Dataset):
         self.max_len_sec = max_len_sec
         self.label_map = label_map
         
-        # Define Mel Spectrogram transform - This part is correct.
+        # Define Mel Spectrogram transform 
         self.mel_spectrogram = T.MelSpectrogram(
             sample_rate=target_sr,
             n_fft=n_fft,
             hop_length=hop_length,
             n_mels=n_mels
         )
-        # The resampler is removed from __init__
 
     def __len__(self):
         return len(self.dataset)
@@ -40,13 +39,12 @@ class DushaDataset(Dataset):
         # Convert to tensor
         waveform = torch.tensor(waveform).float().unsqueeze(0)
         
-        # 2. Resample if necessary (Moved from __init__)
+        # Resample sampling rate to target_sr 
         if original_sr != self.target_sr:
-            # Create the resampler on-the-fly for the specific sample
             resampler = T.Resample(original_sr, self.target_sr)
             waveform = resampler(waveform)
 
-        # 3. Pre-processing (Padding/Trimming)
+        # Pre-processing (Padding/Trimming)
         max_samples = int(self.target_sr * self.max_len_sec)
         
         if waveform.shape[1] > max_samples:
@@ -55,14 +53,13 @@ class DushaDataset(Dataset):
             padding = max_samples - waveform.shape[1]
             waveform = torch.nn.functional.pad(waveform, (0, padding)) # Pad
 
-        # 4. Feature Extraction (Mel Spectrogram)
+        # Feature Extraction (Mel Spectrogram)
         mel_spec = self.mel_spectrogram(waveform).squeeze(0)
         log_mel_spec = T.AmplitudeToDB()(mel_spec)
 
         # Add a channel dimension for the CNN: (1, N_MELS, N_FRAMES)
         features = log_mel_spec.unsqueeze(0)
         
-        # Get label
         label_id = self.label_map[sample['emotion']]
 
         return features, torch.tensor(label_id, dtype=torch.long)
@@ -71,7 +68,7 @@ class SER_Model(nn.Module):
     def __init__(self, num_classes, n_mels):
         super(SER_Model, self).__init__()
         
-        # 1. Convolutional Block (Feature Extractor from Mel Spectrogram)
+        # Convolutional Block (Feature Extractor from Mel Spectrogram)
         # Input shape: (Batch, 1, n_mels, n_frames)
         self.cnn = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=(3, 3), padding=1),
@@ -90,23 +87,21 @@ class SER_Model(nn.Module):
             nn.MaxPool2d(kernel_size=(2, 2)) # Output: (B, 128, n_mels/8, n_frames/8)
         )
         
-        # Calculate the size of the feature vector after CNN
         # Feature height after 3 MaxPool2d layers (2*2): n_mels // 8
         cnn_output_height = n_mels // 8
         rnn_input_size = 128 * cnn_output_height # 128 channels * height
 
-        # 2. Recurrent Block (Temporal Modeling)
-        # We process the output of the CNN as a sequence of frames
+        # Recurrent Block 
         self.rnn = nn.LSTM(
             input_size=rnn_input_size,
             hidden_size=128,
             num_layers=2,
             batch_first=True,
-            bidirectional=True, # Bi-LSTM captures context in both directions
+            bidirectional=True,
             dropout=0.3
         )
 
-        # 3. Classifier Block
+        # Classifier Block
         # Bi-LSTM output size: 2 * hidden_size (due to bidirectional)
         self.classifier = nn.Sequential(
             nn.Linear(128 * 2, 64),
@@ -118,7 +113,6 @@ class SER_Model(nn.Module):
     def forward(self, x):
         # x shape: (B, 1, N_MELS, N_FRAMES)
         
-        # CNN forward pass
         x = self.cnn(x)
         # x shape: (B, Channels, Height, Frames) e.g., (B, 128, 16, 32)
         
@@ -129,7 +123,6 @@ class SER_Model(nn.Module):
         x = x.permute(0, 3, 1, 2).contiguous() # (B, W, C, H)
         x = x.view(B, W, C * H)
         
-        # RNN forward pass
         # The output contains hidden states for each time step
         rnn_output, _ = self.rnn(x) # rnn_output shape: (B, N_FRAMES, 2*128)
         
@@ -137,7 +130,6 @@ class SER_Model(nn.Module):
         # This provides an utterance-level representation
         avg_pool = torch.mean(rnn_output, dim=1) # (B, 2*128)
         
-        # Classifier forward pass
         logits = self.classifier(avg_pool)
         
         return logits
@@ -162,7 +154,6 @@ def train_one_epoch(model, dataloader, criterion, optimizer, device):
 
         total_loss += loss.item() * features.size(0)
         
-        # Calculate accuracy
         _, predicted = torch.max(logits, 1)
         correct_predictions += (predicted == labels).sum().item()
         total_samples += labels.size(0)
@@ -195,74 +186,8 @@ def evaluate(model, dataloader, criterion, device):
     accuracy = correct_predictions / total_samples
     return avg_loss, accuracy
 
-def visualize_temporal_emotion(model, audio_path, label_map, device, max_len_sec, target_sr):
-    # Load and Preprocess a single audio file
-    waveform, sr = torchaudio.load(audio_path)
-    
-    # Standard resampling
-    if sr != target_sr:
-        resampler = T.Resample(sr, target_sr)
-        waveform = resampler(waveform)
-    
-    # Convert to mono if necessary
-    if waveform.shape[0] > 1:
-        waveform = torch.mean(waveform, dim=0, keepdim=True)
-    
-    # Padding/Trimming (same as in Dataset)
-    max_samples = int(target_sr * max_len_sec)
-    original_length_sec = waveform.shape[1] / target_sr
-    
-    if waveform.shape[1] > max_samples:
-        waveform = waveform[:, :max_samples]
-    
-    # Feature Extraction
-    mel_spectrogram = T.MelSpectrogram(
-        sample_rate=target_sr, n_fft=N_FFT, hop_length=HOP_LENGTH, n_mels=N_MELS
-    )
-    log_mel_spec = T.AmplitudeToDB()(mel_spectrogram(waveform)).unsqueeze(0)
-    features = log_mel_spec.to(device)
-    
-    model.eval()
-    with torch.no_grad():
-        # --- Modified Forward Pass for Temporal Output ---
-        x = model.cnn(features) # (1, Channels, Height, Frames)
-        B, C, H, W = x.shape
-        x = x.permute(0, 3, 1, 2).contiguous()
-        x = x.view(B, W, C * H) # (1, N_FRAMES_RNN, Features)
-        
-        # Pass through RNN
-        rnn_output, _ = model.rnn(x) # (1, N_FRAMES_RNN, 2*128)
-        
-        # Apply the final classifier to *each time step* in the RNN output sequence
-        # We need to reshape the output to apply the classifier: (1*N_FRAMES_RNN, 2*128)
-        temporal_logits = model.classifier(rnn_output.view(-1, rnn_output.size(-1)))
-        
-        # Convert logits to probabilities (Softmax)
-        temporal_probs = torch.softmax(temporal_logits, dim=1)
-        
-        # Reshape back to (N_FRAMES_RNN, NUM_CLASSES)
-        temporal_probs = temporal_probs.view(W, NUM_CLASSES).cpu().numpy()
-
-    # --- Visualization ---
-    
-    # Calculate time axis (since CNN/Pooling reduced the frame count, time steps are fewer)
-    time_points = np.linspace(0, min(original_length_sec, max_len_sec), temporal_probs.shape[0])
-    
-    plt.figure(figsize=(12, 6))
-    
-    # Plot probability of each emotion over time
-    for i, label in enumerate(label_map):
-        plt.plot(time_points, temporal_probs[:, i], label=label)
-        
-    plt.title(f"Temporal Emotion Probability for Audio (Duration: {original_length_sec:.2f}s)")
-    plt.xlabel("Time (seconds)")
-    plt.ylabel("Probability")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
 
 def main():
-    # --- Configuration ---
     # Check for GPU and set device
     print("start")
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -291,7 +216,7 @@ def main():
     label_to_id = {label: i for i, label in enumerate(EMOTION_LABELS)}
     id_to_label = {i: label for label, i in label_to_id.items()}
 
-    # --- Class Balance and Weighted Loss Calculation (from provided data) ---
+    # Class balance:
     train_counts = {
         'neutral': 0.527,
         'angry': 0.209,
@@ -308,8 +233,6 @@ def main():
     # Calculate inverse of counts
     inv_counts = 1.0 / np.array(class_counts_list)
 
-    # Normalize weights (e.g., by the smallest weight, or just use the raw inverse)
-    # Using raw inverse for better scaling in loss function
     weights = inv_counts / np.min(inv_counts)
 
     CLASS_WEIGHTS = torch.tensor(weights, dtype=torch.float32).to(DEVICE)
@@ -321,7 +244,6 @@ def main():
     train_dataset = DushaDataset(raw_datasets["train"], SAMPLING_RATE, MAX_AUDIO_LENGTH, N_MELS, N_FFT, HOP_LENGTH, label_to_id)
     test_dataset = DushaDataset(raw_datasets["test"], SAMPLING_RATE, MAX_AUDIO_LENGTH, N_MELS, N_FFT, HOP_LENGTH, label_to_id)
 
-    # Set num_workers=0 for debugging
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
     test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
 
@@ -329,12 +251,10 @@ def main():
     example_features, _ = train_dataset[0]
     print(f"Example feature shape (C, H, W): {example_features.shape}")
     
-    # Instantiate model, criterion, optimizer
     model = SER_Model(NUM_CLASSES, N_MELS).to(DEVICE)
     criterion = nn.CrossEntropyLoss(weight=CLASS_WEIGHTS)
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-    # --- Main Training Loop ---
     print("\nStarting Training...")
     best_test_loss = float('inf')
     history = {'train_loss': [], 'train_acc': [], 'test_loss': [], 'test_acc': []}

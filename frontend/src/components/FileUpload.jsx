@@ -1,4 +1,3 @@
-// src/components/FileUpload.jsx
 import React, { useState } from 'react';
 import { uploadFile } from '../services/api';
 
@@ -18,8 +17,8 @@ const FileUpload = ({ onUploadSuccess }) => {
     setIsUploading(true);
     try {
       await uploadFile(selectedFile);
-      onUploadSuccess(); // Notify parent component to refresh file list
-      setSelectedFile(null); // Reset the input
+      onUploadSuccess(); 
+      setSelectedFile(null);
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Неудалось загрузить файл.');

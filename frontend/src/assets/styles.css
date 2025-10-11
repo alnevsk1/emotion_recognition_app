@@ -1,5 +1,3 @@
-/* src/assets/styles.css */
-
 .App {
   display: grid;
   grid-template-columns: 800px 1fr; /* Sidebar width and main content */
@@ -102,12 +100,11 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* --- FileHistory specific styles --- */
 .file-history-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: 400px; /* Adjust as needed */
+  max-height: 400px; 
   overflow-y: auto;
 }
 
@@ -228,7 +225,7 @@ td .status {
 /* Remove responsive table for desktop-first view */
 @media (max-width: 1200px) {
   .App {
-    grid-template-columns: 1fr; /* Stack columns on smaller screens */
+    grid-template-columns: 1fr; 
     grid-template-areas:
       "header"
       "sidebar"
