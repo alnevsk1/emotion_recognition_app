@@ -33,11 +33,24 @@ const EMOTION_TRANSLATIONS = {
 const EmotionPlot = ({ recognitionData, fileId }) => {
     const [hoveredDatasetIndex, setHoveredDatasetIndex] = useState(null);
 
-    
-    const audioUrl = fileId ? getAudioUrl(fileId) : null;
-    const averageMood = recognitionData.average_mood ? EMOTION_TRANSLATIONS[recognitionData.average_mood] : recognitionData.average_mood;
+    const handleExportJson = () => {
+        if (!recognitionData) return;
+        const jsonString = JSON.stringify(recognitionData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `recognition_result_${fileId}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
 
     const datasets = useMemo(() => {
+        if (!recognitionData || !recognitionData.segments || recognitionData.segments.length === 0) {
+            return [];
+    }
         const emotions = Object.keys(recognitionData.segments[0].probabilities);
         return emotions.map((emotion, index) => {
             const originalColor = EMOTION_COLORS[emotion] || 'rgba(0,0,0,1)';
@@ -62,12 +75,15 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
         });
     }, [recognitionData, hoveredDatasetIndex]);
 
-    const labels = recognitionData.segments.map(segment => (segment.start_ms / 1000).toFixed(1) + 's');
-    const data = { labels, datasets };
 
     if (!recognitionData || !recognitionData.segments || recognitionData.segments.length === 0) {
         return <p style={{ textAlign: 'center', marginTop: '40px', color: '#667' }}>Выберите успешно распознанный файл для просмотра графика.</p>;
     }
+
+    const audioUrl = fileId ? getAudioUrl(fileId) : null;
+    const averageMood = recognitionData.average_mood ? EMOTION_TRANSLATIONS[recognitionData.average_mood] : recognitionData.average_mood;
+    const labels = recognitionData.segments.map(segment => (segment.start_ms / 1000).toFixed(1) + 's');
+    const data = { labels, datasets };
 
     const options = {
         responsive: true,
@@ -127,6 +143,9 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
                     Среднее настроение: <span style={{ color: EMOTION_COLORS[recognitionData.average_mood] || '#000' }}>{averageMood}</span>
                 </h3>
                 {audioUrl && <audio controls src={audioUrl} style={{ width: '100%' }} />}
+                <button onClick={handleExportJson} style={{ marginTop: '10px', padding: '8px 12px', cursor: 'pointer' }}>
+                    Экспорт в JSON
+                </button>
             </div>
             <Line 
                 options={options} 
