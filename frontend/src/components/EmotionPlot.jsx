@@ -33,9 +33,6 @@ const EMOTION_TRANSLATIONS = {
 const EmotionPlot = ({ recognitionData, fileId }) => {
     const [hoveredDatasetIndex, setHoveredDatasetIndex] = useState(null);
 
-    if (!recognitionData || !recognitionData.segments || recognitionData.segments.length === 0) {
-        return <p style={{ textAlign: 'center', marginTop: '40px', color: '#667' }}>Выберите успешно распознанный файл для просмотра графика.</p>;
-    }
     
     const audioUrl = fileId ? getAudioUrl(fileId) : null;
     const averageMood = recognitionData.average_mood ? EMOTION_TRANSLATIONS[recognitionData.average_mood] : recognitionData.average_mood;
@@ -67,6 +64,10 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
 
     const labels = recognitionData.segments.map(segment => (segment.start_ms / 1000).toFixed(1) + 's');
     const data = { labels, datasets };
+
+    if (!recognitionData || !recognitionData.segments || recognitionData.segments.length === 0) {
+        return <p style={{ textAlign: 'center', marginTop: '40px', color: '#667' }}>Выберите успешно распознанный файл для просмотра графика.</p>;
+    }
 
     const options = {
         responsive: true,
