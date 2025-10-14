@@ -20,7 +20,7 @@ NUM_CLASSES = len(EMOTION_LABELS)
 N_MELS = 128
 N_FFT = 1024
 HOP_LENGTH = 512
-SAMPLING_RATE = 16000  # must match your training config
+SAMPLING_RATE = 16000  
 
 RESULTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'results'))
 
