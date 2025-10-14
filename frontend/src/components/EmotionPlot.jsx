@@ -79,28 +79,6 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
     });
   }, [recognitionData, hoveredDatasetIndex]);
 
-  if (!recognitionData || !recognitionData.segments || recognitionData.segments.length === 0) {
-    return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
-        Выберите успешно распознанный файл для просмотра графика.
-      </div>
-    );
-  }
-
-  const audioUrl = fileId ? getAudioUrl(fileId) : null;
-  const averageMood = recognitionData.average_mood
-    ? EMOTION_TRANSLATIONS[recognitionData.average_mood]
-    : recognitionData.average_mood;
-
-  const labels = recognitionData.segments.map(segment => {
-    const midpoint = (segment.start_ms + segment.end_ms) / 2000; // Convert to seconds
-    return midpoint.toFixed(1) + 's';
-  });
-
-  const data = {
-    labels,
-    datasets
-  };
 
   const options = useMemo(() => ({
     responsive: true,
@@ -200,6 +178,28 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
   }), [recognitionData]);
 
 
+  if (!recognitionData || !recognitionData.segments || recognitionData.segments.length === 0) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        Выберите успешно распознанный файл для просмотра графика.
+      </div>
+    );
+  }
+  
+  const audioUrl = fileId ? getAudioUrl(fileId) : null;
+  const averageMood = recognitionData.average_mood
+    ? EMOTION_TRANSLATIONS[recognitionData.average_mood]
+    : recognitionData.average_mood;
+
+  const labels = recognitionData.segments.map(segment => {
+    const midpoint = (segment.start_ms + segment.end_ms) / 2000; // Convert to seconds
+    return midpoint.toFixed(1) + 's';
+  });
+
+  const data = {
+    labels,
+    datasets
+  };
   
   return (
         <div className="chart-container" style={{ height: '500px', position: 'relative' }}>
