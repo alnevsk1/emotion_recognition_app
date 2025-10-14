@@ -19,7 +19,7 @@ const FileHistory = ({ files, onRecognizeStart, onSelectFile, onRefresh, isLoadi
       onRecognizeStart();
     } catch (error) {
       console.error('Error starting recognition:', error);
-      alert('Неудалось начать распознавание.');
+      alert('Неудалось начать распознавание: ' + error.message);
     }
   };
 
