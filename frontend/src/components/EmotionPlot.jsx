@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import { getAudioUrl } from '../services/api';
+import zoomPlugin, { zoom } from 'chartjs-plugin-zoom';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,7 +13,7 @@ import {
   Legend
 } from 'chart.js';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, zoomPlugin);
 
 const EMOTION_COLORS = {
   angry: 'rgba(255, 99, 132, 1)',
@@ -72,8 +73,8 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
         borderColor: lineBorderColor,
         originalColor: originalColor,
         borderWidth: isHovered ? 4 : 2,
-        pointRadius: 3,
-        pointHoverRadius: 5,
+        pointRadius: 1,
+        pointHoverRadius: 3,
       };
     });
   }, [recognitionData, hoveredDatasetIndex]);
@@ -91,7 +92,6 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
     ? EMOTION_TRANSLATIONS[recognitionData.average_mood]
     : recognitionData.average_mood;
 
-  // Create labels for all segments, using segment midpoint for display
   const labels = recognitionData.segments.map(segment => {
     const midpoint = (segment.start_ms + segment.end_ms) / 2000; // Convert to seconds
     return midpoint.toFixed(1) + 's';
@@ -102,7 +102,7 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
     datasets
   };
 
-  const options = {
+  const options = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
     onHover: (event, chartElement, chart) => {
@@ -129,6 +129,21 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
           }
         }
       },
+      zoom: {
+        pan: {
+          enabled: true,
+          mode: 'x',
+        },
+        zoom: {
+          wheel: {
+            enabled: true,
+          },
+          pinch: {
+            enabled: true,
+          },
+          mode: 'x',
+        },
+ },
       tooltip: {
         enabled: true,
         usePointStyle: true,
@@ -162,7 +177,7 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
         max: 1,
         ticks: {
           callback: function(value) {
-            return (value * 100).toFixed(0) + '%';
+            return (value);
           }
         },
         title: {
@@ -182,8 +197,10 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
         }
       }
     }
-  };
+  }), [recognitionData]);
 
+
+  
   return (
         <div className="chart-container" style={{ height: '500px', position: 'relative' }}>
             <div style={{ marginBottom: '20px' }}>
