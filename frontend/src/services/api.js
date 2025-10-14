@@ -8,6 +8,19 @@ const apiClient = axios.create({
   },
 });
 
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.data) {
+      const customError = new Error(error.response.data.detail || 'Ошибка сервера');
+      customError.status = error.response.status;
+      customError.detail = error.response.data.detail;
+      return Promise.reject(customError);
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const uploadFile = (file) => {
   const formData = new FormData();
   formData.append('file', file);
