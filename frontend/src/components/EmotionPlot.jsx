@@ -205,7 +205,7 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
         <div className="chart-container" style={{ height: '500px', position: 'relative' }}>
             <div style={{ marginBottom: '20px' }}>
                 <h3>
-                    Среднее настроение: <span style={{ color: EMOTION_COLORS[recognitionData.average_mood] || '#000' }}>{averageMood}</span>
+                    Среднее настроение:   {recognitionData.average_mood}
                 </h3>
                 {audioUrl && <audio controls src={audioUrl} style={{ width: '100%' }} />}
                 <button onClick={handleExportJson} style={{ marginTop: '10px', padding: '8px 12px', cursor: 'pointer' }}>

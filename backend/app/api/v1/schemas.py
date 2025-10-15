@@ -37,9 +37,30 @@ class ProbabilitySegment(BaseModel):
     end_ms: int
     probabilities: Dict[str, float]
 
+class MoodAlternative(BaseModel):
+    label: str
+    score: float
+
+    class Config:
+        orm_mode = True
+
+class MoodDetails(BaseModel):
+    # Mirrors the detailed output of fuzzy_mood(return_details=True)
+    mood: str
+    valence: float              
+    arousal: float              
+    confidence: float           
+    avg_probs: Dict[str, float] 
+    fired_rule: str
+    alternatives: List[MoodAlternative] = []
+
+    class Config:
+        orm_mode = True
+
 class FullRecognitionResult(BaseModel):
     segments: List[ProbabilitySegment]
     average_mood: str
+    mood_details: Optional[MoodDetails] = None
 
 class AudioFileWithRecognition(AudioFileInDB):
     recognition: Optional[RecognitionResultSchema] = None 

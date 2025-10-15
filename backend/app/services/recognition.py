@@ -7,7 +7,7 @@ from datetime import datetime
 
 from app.db import models
 from app.db.session import SessionLocal
-from app.services import file_handler
+from app.services import file_handler, fuzzy_logic
 
 from transformers import AutoFeatureExtractor, AutoModelForAudioClassification
 
@@ -118,18 +118,18 @@ def run_recognition_pipeline(db, file_id):
                 "probabilities": {emo: float(probs[j]) for j, emo in enumerate(EMOTION_LABELS)}
             })
 
-        avg_probs = np.mean([np.array(list(seg["probabilities"].values())) for seg in segments], axis=0)
-        avg_mood = EMOTION_LABELS[int(np.argmax(avg_probs))]
+        result_from_fuzzy_mood = fuzzy_logic.fuzzy_mood(segments, return_details=True)
 
         result_json = {
             "segments": segments,
-            "average_mood": avg_mood
+            "average_mood": result_from_fuzzy_mood ["mood"],
+            "mood_details": result_from_fuzzy_mood 
         }
 
         result_filename = f"{file_id}.json"
         result_filepath = os.path.join(RESULTS_DIR, result_filename)
         with open(result_filepath, 'w') as f:
-            json.dump(result_json, f, indent=2)
+            json.dump(result_json, f, indent=2, ensure_ascii=False)
 
         recognition_record.recognition_status = models.RecognitionStatusEnum.success
         recognition_record.recognition_path = result_filepath
