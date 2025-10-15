@@ -122,6 +122,6 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 
 ## TODO
 
-- Add normal fuzzy logic in backend;
+- Upgrade fuzzy logic;
 - Configure normal .env file;
 - Add docker file;
