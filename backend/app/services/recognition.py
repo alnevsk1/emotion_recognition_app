@@ -11,7 +11,7 @@ from app.services import file_handler
 
 from transformers import AutoFeatureExtractor, AutoModelForAudioClassification
 
-# CONFIG: Put your model directory here (should contain model.safetensors, config.json, preprocessor_config.json)
+# CONFIG: Model directory here (should contain model.safetensors, config.json, preprocessor_config.json)
 MODEL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'emotion_recognition', 'fine-tuned-emotion-model'))
 
 EMOTION_LABELS = ['angry', 'sad', 'neutral', 'positive', 'other']
@@ -23,6 +23,7 @@ HOP_LENGTH = 512
 SAMPLING_RATE = 16000  
 
 RESULTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'results'))
+os.makedirs(RESULTS_DIR, exist_ok=True)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
