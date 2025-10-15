@@ -20,13 +20,12 @@ NUM_CLASSES = len(EMOTION_LABELS)
 N_MELS = 128
 N_FFT = 1024
 HOP_LENGTH = 512
-SAMPLING_RATE = 16000  # must match your training config
+SAMPLING_RATE = 16000  
 
 RESULTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'results'))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# --- Model & feature extractor ---
 feature_extractor = AutoFeatureExtractor.from_pretrained(MODEL_DIR)
 model = AutoModelForAudioClassification.from_pretrained(MODEL_DIR)
 model = model.to(device)
@@ -118,7 +117,6 @@ def run_recognition_pipeline(db, file_id):
                 "probabilities": {emo: float(probs[j]) for j, emo in enumerate(EMOTION_LABELS)}
             })
 
-        # Average mood
         avg_probs = np.mean([np.array(list(seg["probabilities"].values())) for seg in segments], axis=0)
         avg_mood = EMOTION_LABELS[int(np.argmax(avg_probs))]
 

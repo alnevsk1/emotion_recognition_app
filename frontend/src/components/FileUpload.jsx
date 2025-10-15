@@ -1,4 +1,3 @@
-// src/components/FileUpload.jsx
 import React, { useState } from 'react';
 import { uploadFile } from '../services/api';
 
@@ -18,11 +17,11 @@ const FileUpload = ({ onUploadSuccess }) => {
     setIsUploading(true);
     try {
       await uploadFile(selectedFile);
-      onUploadSuccess(); // Notify parent component to refresh file list
-      setSelectedFile(null); // Reset the input
+      onUploadSuccess(); 
+      setSelectedFile(null);
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('Неудалось загрузить файл.');
+      alert('Неудалось загрузить файл: ' + error.message); 
     } finally {
       setIsUploading(false);
     }
@@ -30,7 +29,7 @@ const FileUpload = ({ onUploadSuccess }) => {
 
   return (
     <div>
-      <h3>Загрузка аудио файла</h3>
+      <h3>Загрузка аудио файла: .mp3 или .wav</h3>
       <input type="file" accept=".mp3,.wav" onChange={handleFileChange} />
       <button onClick={handleUpload} disabled={isUploading || !selectedFile}>
         {isUploading ? 'Загрузка...' : 'Загрузить'}

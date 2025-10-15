@@ -1,4 +1,3 @@
-# backend/app/services/file_handler.py
 import shutil
 import os
 import uuid
