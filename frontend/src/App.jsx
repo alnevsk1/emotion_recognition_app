@@ -35,6 +35,7 @@ const App = () => {
         setSelectedFileId(file.file_id);
       } catch (error) {
         console.error("Неудалось обработать результат распознавания:", error);
+        alert('Не удалось загрузить результаты распознавания: ' + error.detail);
         setSelectedResult(null);
         setSelectedFileId(null);
       }
