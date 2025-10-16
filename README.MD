@@ -45,6 +45,7 @@ This repository contains a comprehensive application for speech emotion recognit
 - **Python 3.10+**: For the backend.
 - **Node.js 18+**: For the frontend.
 - **PostgreSQL**: The recommended database for production.
+- **FFMPEG <7**: For correct work of audio recognition.
 
 ## Backend — Setup & Run
 
@@ -52,9 +53,9 @@ This repository contains a comprehensive application for speech emotion recognit
 
    ```bash
    cd backend
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
+   conda create -n emotion_recognition_app python=3.11
    pip install -r requirements.txt
+   conda install -c conda-forge 'ffmpeg<7'
    ```
 2. **Configure Environment**:
    Create a `.env` file in the `backend/` directory with your database URL:
