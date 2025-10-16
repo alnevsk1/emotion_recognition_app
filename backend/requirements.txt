@@ -6,3 +6,8 @@ python-dotenv
 pydantic[dotenv]
 python-multipart
 pydantic-settings
+torch
+torchaudio
+numpy
+transformers
+torchcodec
