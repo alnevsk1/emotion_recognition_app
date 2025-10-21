@@ -87,6 +87,15 @@
    source .venv/bin/activate  # На Windows используйте `.venv\Scripts\activate`
    pip install -r requirements.txt
    ```
+  При проблеме с FFMmpeg использовать conda:
+
+   ```bash
+   cd backend
+   conda create -n emotion_recognition_app python=3.11
+   conda activate emotion_recognition_app
+   pip install -r requirements.txt
+   conda install -c conda-forge 'ffmpeg<7'
+   ```
 2. **Настройка окружения**:
    Создайте файл `.env` в директории `backend/` с URL вашей базы данных:
 
