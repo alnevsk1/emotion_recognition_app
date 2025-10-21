@@ -1,8 +1,19 @@
 // src/services/api.js
 import axios from 'axios';
 
+// Determine base URL based on environment
+const getBaseURL = () => {
+  // Check if running in Docker (nginx proxy) or locally
+  if (window.location.hostname === 'localhost' && window.location.port === '5173') {
+    // Local development - direct connection to backend
+    return 'http://localhost:8000/api/v1';
+  }
+  // Docker/production - use relative path for nginx proxy
+  return '/api/v1';
+};
+
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8000/api/v1', // Backend URL
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
