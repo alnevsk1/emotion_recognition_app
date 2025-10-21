@@ -1,6 +1,6 @@
 // src/components/FileHistory.jsx
-import React, { useState } from 'react';
-import { startRecognition } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { startRecognition, getRecognitionProgress } from '../services/api';
 
 const STATUS_TRANSLATIONS = {
   success: 'Успешно',
@@ -11,6 +11,7 @@ const STATUS_TRANSLATIONS = {
 
 const FileHistory = ({ files, onRecognizeStart, onSelectFile, onRefresh, isLoading }) => {
   const [selectedFileId, setSelectedFileId] = useState(null);
+  const [progressData, setProgressData] = useState({});
 
   const handleRecognize = async (e, fileId) => {
     e.stopPropagation(); 
@@ -27,6 +28,42 @@ const FileHistory = ({ files, onRecognizeStart, onSelectFile, onRefresh, isLoadi
     setSelectedFileId(file.file_id);
     onSelectFile(file);
   };
+
+  // Track progress for files in progress
+  useEffect(() => {
+    const inProgressFiles = files.filter(file => 
+      file.recognition && file.recognition.recognition_status === 'in_progress'
+    );
+
+    if (inProgressFiles.length === 0) {
+      return;
+    }
+
+    const progressInterval = setInterval(async () => {
+      for (const file of inProgressFiles) {
+        try {
+          const response = await getRecognitionProgress(file.file_id);
+          const progress = response.data.progress;
+          
+          setProgressData(prev => ({
+            ...prev,
+            [file.file_id]: progress
+          }));
+
+          // Auto-refresh when progress reaches 100%
+          if (progress >= 100) {
+            setTimeout(() => {
+              onRefresh();
+            }, 1000); // Small delay to ensure backend has updated
+          }
+        } catch (error) {
+          console.error('Error fetching progress:', error);
+        }
+      }
+    }, 2000); // Check every 2 seconds
+
+    return () => clearInterval(progressInterval);
+  }, [files, onRefresh]);
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -54,13 +91,26 @@ const FileHistory = ({ files, onRecognizeStart, onSelectFile, onRefresh, isLoadi
             onClick={() => handleSelect(file)}
           >
             <div className="file-info">
-              <span>{file.file_name}</span>
+              <span>{file.file_name} </span>
               <small>{new Date(file.upload_date).toLocaleString()}</small>
             </div>
             <div className="file-actions">
               <span className={`file-status ${getStatusClass(file.recognition.recognition_status)}`}>
                 {STATUS_TRANSLATIONS[file.recognition.recognition_status] || file.recognition.recognition_status}
               </span>
+              {file.recognition.recognition_status === 'in_progress' && (
+                <div className="progress-container">
+                  <div className="progress-bar">
+                    <div 
+                      className="progress-fill" 
+                      style={{ width: `${progressData[file.file_id] || 0}%` }}
+                    ></div>
+                  </div>
+                  <span className="progress-text">
+                    {progressData[file.file_id] || 0}%
+                  </span>
+                </div>
+              )}
               <button
                 onClick={(e) => handleRecognize(e, file.file_id)}
                 disabled={file.recognition.recognition_status === 'in_progress' || file.recognition.recognition_status === 'success'}
