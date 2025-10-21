@@ -9,7 +9,7 @@ const STATUS_TRANSLATIONS = {
   pending: 'В ожидании',
 };
 
-const FileHistory = ({ files, onRecognizeStart, onSelectFile, onRefresh, isLoading }) => {
+const FileHistory = ({ files = [], onRecognizeStart, onSelectFile, onRefresh, isLoading }) => {
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [progressData, setProgressData] = useState({});
 
@@ -31,37 +31,27 @@ const FileHistory = ({ files, onRecognizeStart, onSelectFile, onRefresh, isLoadi
 
   // Track progress for files in progress
   useEffect(() => {
-    const inProgressFiles = files.filter(file => 
-      file.recognition && file.recognition.recognition_status === 'in_progress'
+    const arr = Array.isArray(files) ? files : [];
+    const inProgressFiles = arr.filter(
+      file => file.recognition && file.recognition.recognition_status === 'in_progress'
     );
-
-    if (inProgressFiles.length === 0) {
-      return;
-    }
-
+    if (inProgressFiles.length === 0) return;
+  
     const progressInterval = setInterval(async () => {
       for (const file of inProgressFiles) {
         try {
           const response = await getRecognitionProgress(file.file_id);
           const progress = response.data.progress;
-          
-          setProgressData(prev => ({
-            ...prev,
-            [file.file_id]: progress
-          }));
-
-          // Auto-refresh when progress reaches 100%
+          setProgressData(prev => ({ ...prev, [file.file_id]: progress }));
           if (progress >= 100) {
-            setTimeout(() => {
-              onRefresh();
-            }, 1000); // Small delay to ensure backend has updated
+            setTimeout(() => { onRefresh(); }, 1000);
           }
         } catch (error) {
           console.error('Error fetching progress:', error);
         }
       }
-    }, 2000); // Check every 2 seconds
-
+    }, 2000);
+  
     return () => clearInterval(progressInterval);
   }, [files, onRefresh]);
 
@@ -74,7 +64,7 @@ const FileHistory = ({ files, onRecognizeStart, onSelectFile, onRefresh, isLoadi
       default: return 'status-pending';
     }
   };
-
+  const list = Array.isArray(files) ? files : [];
   return (
     <>
       <div className="file-history-header">
@@ -84,7 +74,7 @@ const FileHistory = ({ files, onRecognizeStart, onSelectFile, onRefresh, isLoadi
         </button>
       </div>
       <ul className="file-history-list">
-        {files.map((file) => (
+        {list.map((file) => (
           <li
             key={file.file_id}
             className={`file-history-item ${selectedFileId === file.file_id ? 'selected' : ''}`}
