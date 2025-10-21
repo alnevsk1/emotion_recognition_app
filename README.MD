@@ -1,127 +1,223 @@
-# Speech Emotion Recognition App
+# Приложение для Распознавания Эмоций в Речи
 
-This repository contains a comprehensive application for speech emotion recognition. It features a FastAPI backend for audio processing and a React frontend for user interaction and data visualization.
+Этот репозиторий содержит комплексное приложение для распознавания эмоций в речи. Оно включает FastAPI backend для обработки аудио и React frontend для взаимодействия с пользователем и визуализации данных.
 
-## Table of Contents
+## Содержание
 
-- [Features](#features)
-- [Repository Layout](#repository-layout)
-- [Requirements](#requirements)
-- [Backend Setup](#backend--setup--run)
-- [Frontend Setup](#frontend--setup--run)
-- [API Endpoints](#backend-endpoints)
-- [Model Integration](#models)
-- [Testing](#tests)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
-- [Contact](#contact)
+- [Возможности](#возможности)
+- [Структура проекта](#структура-проекта)
+- [Требования](#требования)
+- [Быстрый старт с Docker](#быстрый-старт-с-docker)
+- [Ручная установка](#ручная-установка)
+- [API Endpoints](#api-endpoints)
+- [Интеграция моделей](#интеграция-моделей)
+- [Тестирование](#тестирование)
+- [Устранение неполадок](#устранение-неполадок)
+- [Лицензия](#лицензия)
 
-## Features
+## Возможности
 
-- **Audio Upload**: Supports `.mp3` and `.wav` file formats.
-- **Background Processing**: Emotion recognition runs as a background task to prevent UI blocking.
-- **File History**: Displays a list of uploaded files with their recognition status.
-- **Data Visualization**: Renders a plot of emotion probabilities over time for successfully processed files.
-- **Localization**: UI elements and labels are translated for a better user experience.
+- **Загрузка аудио**: Поддержка форматов `.mp3` и `.wav` с валидацией типов файлов.
+- **Фоновая обработка**: Распознавание эмоций выполняется в фоновом режиме с отслеживанием прогресса (0-100%).
+- **История файлов**: Отображение списка загруженных файлов с их статусом распознавания и возможностью воспроизведения.
+- **Интерактивная визуализация**: Построение графика вероятностей эмоций во времени с возможностью масштабирования и экспорта данных.
+- **Нечеткая логика**: Продвинутая система анализа настроения с использованием валентности и возбуждения.
+- **Сегментация аудио**: Автоматическое разделение аудио на 5-секундные сегменты для детального анализа.
+- **Многоязычный интерфейс**: Элементы интерфейса и подписи переведены на русский язык.
+- **Экспорт результатов**: Возможность скачивания результатов анализа в JSON формате.
 
-## Repository Layout
+## Структура проекта
 
-- `backend/`: The FastAPI backend application.
-  - `app/main.py`: FastAPI application entrypoint.
-  - `app/api/v1/endpoints.py`: API endpoints for file handling and recognition.
-  - `app/db/`: SQLAlchemy models and database session management.
-  - `app/services/`: Business logic for file handling and the recognition pipeline.
-  - `data/uploads/`: Directory for storing uploaded audio files.
-  - `data/results/`: Directory for storing recognition JSON results.
-  - `models/`: Contains the machine learning model, training, and inference code.
-  - `requirements.txt`: A list of Python dependencies for the backend.
-- `frontend/`: The React single-page application.
-  - `src/`: The main source code for the React application.
-  - `src/services/api.js`: API wrappers for communicating with the backend.
-  - `package.json`: Contains scripts and dependencies for the frontend.
+- `backend/`: FastAPI backend приложение.
+  - `app/main.py`: Точка входа FastAPI приложения.
+  - `app/api/v1/endpoints.py`: API endpoints для обработки файлов и распознавания.
+  - `app/db/`: SQLAlchemy модели и управление сессиями базы данных.
+  - `app/services/`: Бизнес-логика для обработки файлов и pipeline распознавания.
+  - `data/uploads/`: Директория для хранения загруженных аудио файлов.
+  - `data/results/`: Директория для хранения JSON результатов распознавания.
+  - `models/`: Содержит модель машинного обучения, обучение и код инференса.
+  - `requirements.txt`: Список Python зависимостей для backend.
+- `frontend/`: React одностраничное приложение.
+  - `src/`: Основной исходный код React приложения.
+  - `src/services/api.js`: API обертки для связи с backend.
+  - `package.json`: Содержит скрипты и зависимости для frontend.
 
-## Requirements
+## Требования
 
-- **Python 3.10+**: For the backend.
-- **Node.js 18+**: For the frontend.
-- **PostgreSQL**: The recommended database for production.
+- **Python 3.10+**: Для backend.
+- **Node.js 18+**: Для frontend.
+- **PostgreSQL**: Рекомендуемая база данных для продакшена.
+- **Docker & Docker Compose**: Для контейнеризованного развертывания.
 
-## Backend — Setup & Run
+## Быстрый старт с Docker
 
-1. **Install Dependencies**:
+Рекомендуемый способ запуска приложения с использованием Docker Compose:
+
+1. **Клонируйте репозиторий** (если еще не сделано):
+
+   ```bash
+   git clone <repository-url>
+   cd emotion_recognition_app
+   ```
+2. **Скопируйте шаблон переменных окружения**:
+
+   ```bash
+   cp env.template .env
+   ```
+3. **Запустите все сервисы**:
+
+   ```bash
+   docker-compose up --build
+   ```
+4. **Доступ к приложению**:
+
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API документация: http://localhost:8000/docs
+
+## Ручная установка
+
+### Backend — Установка и запуск
+
+1. **Установка зависимостей**:
 
    ```bash
    cd backend
    python -m venv .venv
-   source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
+   source .venv/bin/activate  # На Windows используйте `.venv\Scripts\activate`
    pip install -r requirements.txt
    ```
-2. **Configure Environment**:
-   Create a `.env` file in the `backend/` directory with your database URL:
+2. **Настройка окружения**:
+   Создайте файл `.env` в директории `backend/` с URL вашей базы данных:
 
    ```
    DATABASE_URL=postgresql://user:password@localhost:5432/emotion_db
    ```
-3. **Run the Application**:
+3. **Запуск приложения**:
 
    ```bash
    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-   The API will be available at `http://localhost:8000/api/v1`.
+   API будет доступно по адресу `http://localhost:8000/api/v1`.
 
-## Frontend — Setup & Run
+### Frontend — Установка и запуск
 
-1. **Install Dependencies**:
+1. **Установка зависимостей**:
 
    ```bash
    cd frontend
    npm install
    ```
-2. **Start the Development Server**:
+2. **Запуск сервера разработки**:
 
    ```bash
    npm run dev
    ```
 
-   The frontend will be accessible at `http://localhost:5173`.
+   Frontend будет доступен по адресу `http://localhost:5173`.
 
-## Backend Endpoints
+## API Endpoints
 
-- `POST /api/v1/files`: Uploads an audio file.
-- `GET /api/v1/files`: Retrieves a list of all uploaded files and their recognition status.
-- `POST /api/v1/files/{file_id}/recognize`: Starts the emotion recognition process for a given file.
-- `GET /api/v1/files/{file_id}/recognition`: Fetches the recognition results for a completed analysis.
+- `POST /api/v1/files`: Загрузка аудио файла с валидацией типа файла.
+- `GET /api/v1/files`: Получение списка всех загруженных файлов с их статусом и прогрессом распознавания.
+- `POST /api/v1/files/{file_id}/recognize`: Запуск процесса распознавания эмоций для указанного файла (асинхронно).
+- `GET /api/v1/files/{file_id}/recognition`: Получение полных результатов распознавания для завершенного анализа.
+- `GET /api/v1/files/{file_id}/progress`: Получение текущего прогресса обработки файла (0-100%).
+- `GET /api/v1/files/{file_id}/audio`: Скачивание оригинального аудио файла.
 
-## Models
+## Интеграция моделей
 
-The `models/emotion_recognition/` directory includes:
+### Текущая архитектура модели
 
-- `model_training.py`: Scripts for training the emotion recognition model.
-- `fine-tuned-emotion-model`: The trained model saved in `.safetensors` format.
+Приложение использует трансформерную модель для классификации эмоций:
 
-To integrate a different model, replace the existing model files and update the prediction logic in `backend/app/services/recognition.py`.
+- **Модель**: Fine-tuned модель на базе Hugging Face Transformers
+- **Формат**: `.safetensors` для безопасного хранения весов
+- **Эмоции**: 5 классов - `angry`, `sad`, `neutral`, `positive`, `other`
+- **Обработка**: Автоматическое извлечение признаков с частотой дискретизации 16kHz
+- **Сегментация**: 5-секундные сегменты для детального анализа
 
-## Tests
+### Структура модели
 
-To run the backend tests, use `pytest`:
+Директория `models/emotion_recognition/` включает:
+
+- `model_training.py`: Скрипты для обучения модели распознавания эмоций с использованием PyTorch
+- `fine-tuned-emotion-model/`: Обученная модель в формате Hugging Face:
+  - `config.json`: Конфигурация модели
+  - `model.safetensors`: Веса модели
+  - `preprocessor_config.json`: Настройки предобработки
+- `er_model.pt`: Дополнительная PyTorch модель (если используется)
+
+### Нечеткая логика
+
+Система включает продвинутую нечеткую логику для анализа настроения:
+
+- **Валентность**: Оценка позитивности/негативности (-0.8 до +0.8)
+- **Возбуждение**: Уровень активации эмоции (0.2 до 0.8)
+- **Правила**: Автоматическое определение доминирующего настроения
+- **Уверенность**: Расчет уровня уверенности в результатах
+
+### Интеграция новой модели
+
+Для интеграции другой модели:
+
+1. Замените файлы в `models/emotion_recognition/fine-tuned-emotion-model/`
+2. Обновите `EMOTION_LABELS` в `backend/app/services/recognition.py`
+3. Убедитесь в совместимости с нечеткой логикой в `backend/app/services/fuzzy_logic.py`
+4. Обновите `EMOTION_TRANSLATIONS` в `frontend/src/components/EmotionPlot.jsx`
+
+## Тестирование
+
+Для запуска тестов backend используйте `pytest`:
 
 ```bash
 cd backend
 pytest
 ```
 
-## Troubleshooting
+## Устранение неполадок
 
-- **CORS Issues**: If the frontend and backend are on different ports, update the CORS settings in `app/main.py`.
-- **Database Connection**: Ensure your database URL is correct and the database server is running.
+### Общие проблемы
 
-## License
+- **Проблемы с CORS**: Если frontend и backend работают на разных портах, обновите настройки CORS в `app/main.py`.
+- **Подключение к базе данных**: Убедитесь, что URL базы данных корректен и сервер базы данных запущен.
+- **Docker проблемы**: Проверьте, что Docker и Docker Compose установлены и запущены.
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+### Проблемы с моделями
 
-## TODO
+- **Отсутствие модели**: Убедитесь, что файлы моделей присутствуют в директории `backend/models/emotion_recognition/fine-tuned-emotion-model/`
+- **Несовместимость модели**: Проверьте, что модель совместима с нечеткой логикой (5 эмоций: angry, sad, neutral, positive, other)
+- **Ошибки CUDA**: При отсутствии GPU модель автоматически переключится на CPU
 
-- Upgrade fuzzy logic;
-- Configure normal .env file;
-- Add docker file;
+### Проблемы с обработкой
+
+- **Большие файлы**: Приложение автоматически сегментирует длинные аудио на 5-секундные части
+- **Неподдерживаемые форматы**: Поддерживаются только `.mp3` и `.wav` файлы
+- **Медленная обработка**: Прогресс отображается в реальном времени (0-100%)
+
+### Проблемы с интерфейсом
+
+- **График не отображается**: Проверьте, что данные распознавания загружены полностью
+- **Файлы не воспроизводятся**: Убедитесь, что аудио файлы не повреждены
+- **Экспорт не работает**: Проверьте права доступа к файловой системе
+
+## Лицензия
+
+Этот проект лицензирован под лицензией MIT. Подробности смотрите в файле `LICENSE`.
+
+## Технические детали
+
+### Архитектура системы
+
+- **Backend**: FastAPI с SQLAlchemy ORM и PostgreSQL
+- **Frontend**: React с Vite, Chart.js для визуализации
+- **ML Pipeline**: PyTorch + Transformers + нечеткая логика
+- **Контейнеризация**: Docker Compose с Nginx для frontend
+
+### Производительность
+
+- **Сегментация**: 5-секундные сегменты для оптимальной точности
+- **Параллелизация**: Асинхронная обработка с отслеживанием прогресса
+- **Кэширование**: Результаты сохраняются в JSON для быстрого доступа
+- **Масштабируемость**: Горизонтальное масштабирование через Docker
