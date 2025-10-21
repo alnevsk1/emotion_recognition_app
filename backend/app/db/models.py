@@ -1,6 +1,6 @@
 import enum
 import uuid
-from sqlalchemy import Column, String, DateTime, Enum as SQLAlchemyEnum, ForeignKey, CheckConstraint
+from sqlalchemy import Column, String, DateTime, Enum as SQLAlchemyEnum, ForeignKey, CheckConstraint, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
@@ -32,5 +32,6 @@ class AudioEmotionRecognition(Base):
     recognition_path = Column(String, nullable=False)
     recognition_date = Column(DateTime, server_default=func.current_timestamp(), nullable=False)
     recognition_status = Column(SQLAlchemyEnum(RecognitionStatusEnum, name='recognition_status_enum'), nullable=False)
+    progress = Column(Integer, default=0, nullable=False)  # Progress percentage (0-100)
     
     audiofile = relationship("AudioFile", back_populates="recognition")

@@ -46,3 +46,7 @@ export const getRecognitionResult = (fileId) => {
 export const getAudioUrl = (fileId) => {
   return `${apiClient.defaults.baseURL}/files/${fileId}/audio`;
 };
+
+export const getRecognitionProgress = (fileId) => {
+  return apiClient.get(`/files/${fileId}/progress`);
+};

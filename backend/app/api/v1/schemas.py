@@ -24,6 +24,7 @@ class RecognitionResultSchema(BaseModel):
     file_id: uuid.UUID
     recognition_date: datetime
     recognition_status: RecognitionStatusEnum
+    progress: int
     
     class Config:
         orm_mode = True
