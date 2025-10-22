@@ -7,7 +7,7 @@ from datetime import datetime
 
 from app.db import models
 from app.db.session import SessionLocal
-from app.services import file_handler
+from app.services import file_handler, fuzzy_logic
 
 from transformers import AutoFeatureExtractor, AutoModelForAudioClassification
 
@@ -32,6 +32,10 @@ model = AutoModelForAudioClassification.from_pretrained(MODEL_DIR)
 model = model.to(device)
 model.eval()
 
+# Validate model compatibility with fuzzy logic
+if not fuzzy_logic.validate_emotion_model_compatibility(EMOTION_LABELS):
+    raise RuntimeError("Emotion model is not compatible with fuzzy logic system")
+
 def create_initial_recognition_record(db, file_id):
     existing = db.query(models.AudioEmotionRecognition).filter_by(file_id=file_id).first()
     if not existing:
@@ -49,6 +53,13 @@ def update_recognition_status(db, file_id, status):
     recognition_record = db.query(models.AudioEmotionRecognition).filter_by(file_id=file_id).first()
     if recognition_record:
         recognition_record.recognition_status = status
+        db.commit()
+
+def update_recognition_progress(db, file_id, progress):
+    """Helper function to update the progress of a recognition record."""
+    recognition_record = db.query(models.AudioEmotionRecognition).filter_by(file_id=file_id).first()
+    if recognition_record:
+        recognition_record.progress = progress
         db.commit()
 
 def get_recognition_result_json(db, file_id):
@@ -72,6 +83,9 @@ def run_recognition_pipeline(db, file_id):
         return
 
     try:
+        # Update progress to 10% - starting processing
+        update_recognition_progress(db, file_id, 10)
+        
         file_path = audio_file.file_path
         waveform, sr = torchaudio.load(file_path)
 
@@ -82,6 +96,9 @@ def run_recognition_pipeline(db, file_id):
         # Convert to mono
         if waveform.shape[0] > 1:
             waveform = torch.mean(waveform, dim=0, keepdim=True)
+
+        # Update progress to 20% - preprocessing complete
+        update_recognition_progress(db, file_id, 20)
 
         SEGMENT_SEC = 5  # segment length in seconds
         segment_samples = int(SAMPLING_RATE * SEGMENT_SEC)
@@ -117,20 +134,33 @@ def run_recognition_pipeline(db, file_id):
                 "end_ms": int(end * 1000 / SAMPLING_RATE),
                 "probabilities": {emo: float(probs[j]) for j, emo in enumerate(EMOTION_LABELS)}
             })
+            
+            # Update progress based on segments processed (20% to 80%)
+            segment_progress = 20 + int((i + 1) / num_segments * 60)
+            update_recognition_progress(db, file_id, segment_progress)
 
-        avg_probs = np.mean([np.array(list(seg["probabilities"].values())) for seg in segments], axis=0)
-        avg_mood = EMOTION_LABELS[int(np.argmax(avg_probs))]
+        # Update progress to 85% - model processing complete
+        update_recognition_progress(db, file_id, 85)
+
+        result_from_fuzzy_mood = fuzzy_logic.fuzzy_mood(segments, return_details=True)
+
+        # Update progress to 90% - fuzzy logic complete
+        update_recognition_progress(db, file_id, 90)
 
         result_json = {
             "segments": segments,
-            "average_mood": avg_mood
+            "average_mood": result_from_fuzzy_mood["mood"],
+            "mood_details": result_from_fuzzy_mood
         }
 
         result_filename = f"{file_id}.json"
         result_filepath = os.path.join(RESULTS_DIR, result_filename)
         with open(result_filepath, 'w') as f:
-            json.dump(result_json, f, indent=2)
+            json.dump(result_json, f, indent=2, ensure_ascii=False)
 
+        # Update progress to 100% - complete
+        update_recognition_progress(db, file_id, 100)
+        
         recognition_record.recognition_status = models.RecognitionStatusEnum.success
         recognition_record.recognition_path = result_filepath
         recognition_record.recognition_date = datetime.utcnow()

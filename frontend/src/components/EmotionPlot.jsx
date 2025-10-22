@@ -31,6 +31,12 @@ const EMOTION_TRANSLATIONS = {
   other: 'Другое',
 };
 
+function secToMinSec(seconds) {
+  const min = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60);
+  return `${min}:${sec.toString().padStart(2, '0')}`;
+}
+
 const EmotionPlot = ({ recognitionData, fileId }) => {
   const [hoveredDatasetIndex, setHoveredDatasetIndex] = useState(null);
 
@@ -130,9 +136,9 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
           title: (context) => {
             const segmentIndex = context[0].dataIndex;
             const segment = recognitionData.segments[segmentIndex];
-            const startSec = (segment.start_ms / 1000).toFixed(2);
-            const endSec = (segment.end_ms / 1000).toFixed(2);
-            return `Сегмент: ${startSec}s - ${endSec}s`;
+            const startSec = segment.start_ms / 1000;
+            const endSec = segment.end_ms / 1000;
+            return `Сегмент: ${secToMinSec(startSec)} - ${secToMinSec(endSec)}`;
           },
           label: (context) => `${context.dataset.label}: ${(context.parsed.y ).toFixed(3)}`,
           labelColor: function(context) {
@@ -171,7 +177,7 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
         },
         title: {
           display: true,
-          text: 'Время (секунды)'
+          text: 'Время (минуты:секунды)'
         }
       }
     }
@@ -192,8 +198,8 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
     : recognitionData.average_mood;
 
   const labels = recognitionData.segments.map(segment => {
-    const midpoint = (segment.start_ms + segment.end_ms) / 2000; // Convert to seconds
-    return midpoint.toFixed(1) + 's';
+    const midpoint = (segment.start_ms + segment.end_ms) / 2000;
+    return secToMinSec(midpoint);
   });
 
   const data = {
@@ -205,7 +211,7 @@ const EmotionPlot = ({ recognitionData, fileId }) => {
         <div className="chart-container" style={{ height: '500px', position: 'relative' }}>
             <div style={{ marginBottom: '20px' }}>
                 <h3>
-                    Среднее настроение: <span style={{ color: EMOTION_COLORS[recognitionData.average_mood] || '#000' }}>{averageMood}</span>
+                    Среднее настроение:   {recognitionData.average_mood}
                 </h3>
                 {audioUrl && <audio controls src={audioUrl} style={{ width: '100%' }} />}
                 <button onClick={handleExportJson} style={{ marginTop: '10px', padding: '8px 12px', cursor: 'pointer' }}>

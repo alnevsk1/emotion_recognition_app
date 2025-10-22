@@ -6,6 +6,7 @@ from fastapi.responses import FileResponse
 import os
 
 from app.db.session import get_db
+from app.db import models
 from app import services
 from . import schemas
 
@@ -45,6 +46,13 @@ def get_recognition_result(file_id: uuid.UUID, db: Session = Depends(get_db)):
     if not result:
         raise HTTPException(status_code=404, detail="Recognition result not found or not complete.")
     return result
+
+@router.get("/files/{file_id}/progress", response_model=schemas.RecognitionResultSchema)
+def get_recognition_progress(file_id: uuid.UUID, db: Session = Depends(get_db)):
+    recognition = db.query(models.AudioEmotionRecognition).filter_by(file_id=file_id).first()
+    if not recognition:
+        raise HTTPException(status_code=404, detail="Recognition record not found.")
+    return recognition
 
 @router.get("/files/{file_id}/audio")
 def get_audio_file_data(file_id: uuid.UUID, db: Session = Depends(get_db)):

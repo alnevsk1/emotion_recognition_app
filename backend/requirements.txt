@@ -7,7 +7,9 @@ pydantic[dotenv]
 python-multipart
 pydantic-settings
 torch
+torchvision
 torchaudio
-numpy
+torchcodec[ffmpeg]
 transformers
-torchcodec
+librosa
+soundfile
