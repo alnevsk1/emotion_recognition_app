@@ -58,7 +58,6 @@
    ```bash
    git clone <repository-url>
    cd emotion_recognition_app
-   git lfs pull  # В случае ошибки Safetensors
    ```
 2. **Скопируйте шаблон переменных окружения**:
 
@@ -88,15 +87,17 @@
    source .venv/bin/activate  # На Windows используйте `.venv\Scripts\activate`
    pip install -r requirements.txt
    ```
+
   При проблеме с FFMmpeg использовать conda:
 
-   ```bash
+```bash
    cd backend
    conda create -n emotion_recognition_app python=3.11
    conda activate emotion_recognition_app
    pip install -r requirements.txt
    conda install -c conda-forge 'ffmpeg<7'
-   ```
+```
+
 2. **Настройка окружения**:
    Создайте файл `.env` в директории `backend/` с URL вашей базы данных:
 
@@ -193,7 +194,6 @@ pytest
 - **Проблемы с CORS**: Если frontend и backend работают на разных портах, обновите настройки CORS в `app/main.py`.
 - **Подключение к базе данных**: Убедитесь, что URL базы данных корректен и сервер базы данных запущен.
 - **Docker проблемы**: Проверьте, что Docker и Docker Compose установлены и запущены.
-- **SafetensorError**: Сделать `git lfs pull` в корневой папке репозитерия. 
 
 ### Проблемы с моделями
 
