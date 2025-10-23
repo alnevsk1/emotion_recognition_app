@@ -13,6 +13,14 @@ from transformers import AutoFeatureExtractor, AutoModelForAudioClassification
 
 # CONFIG: Model directory here (should contain model.safetensors, config.json, preprocessor_config.json)
 MODEL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'emotion_recognition', 'fine-tuned-emotion-model'))
+os.makedirs(MODEL_DIR, exist_ok=True)
+model_name = 'rudger1234/Emotion-recognition-model'
+
+if not os.listdir(MODEL_DIR):
+    feature_extractor_save = AutoFeatureExtractor.from_pretrained(model_name)
+    model_save = AutoModelForAudioClassification.from_pretrained(model_name)
+    model_save.save_pretrained(MODEL_DIR)
+    feature_extractor_save.save_pretrained(MODEL_DIR)
 
 EMOTION_LABELS = ['angry', 'sad', 'neutral', 'positive', 'other']
 NUM_CLASSES = len(EMOTION_LABELS)
