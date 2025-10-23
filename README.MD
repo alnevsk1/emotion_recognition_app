@@ -58,6 +58,7 @@
    ```bash
    git clone <repository-url>
    cd emotion_recognition_app
+   git lfs pull  # В случае ошибки Safetensors
    ```
 2. **Скопируйте шаблон переменных окружения**:
 
@@ -192,6 +193,7 @@ pytest
 - **Проблемы с CORS**: Если frontend и backend работают на разных портах, обновите настройки CORS в `app/main.py`.
 - **Подключение к базе данных**: Убедитесь, что URL базы данных корректен и сервер базы данных запущен.
 - **Docker проблемы**: Проверьте, что Docker и Docker Compose установлены и запущены.
+- **SafetensorError**: Сделать `git lfs pull` в корневой папке репозитерия. 
 
 ### Проблемы с моделями
 
