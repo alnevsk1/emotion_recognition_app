@@ -143,7 +143,7 @@
 
 Приложение использует трансформерную модель для классификации эмоций:
 
-- **Модель**: Fine-tuned модель на базе Hugging Face Transformers
+- **Модель**: Fine-tuned модель на базе Hugging Face Transformers. Загружена на [Hugging Face](https://huggingface.co/rudger1234/Emotion-recognition-model)
 - **Формат**: `.safetensors` для безопасного хранения весов
 - **Эмоции**: 5 классов - `angry`, `sad`, `neutral`, `positive`, `other`
 - **Обработка**: Автоматическое извлечение признаков с частотой дискретизации 16kHz
