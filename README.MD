@@ -59,11 +59,6 @@
    git clone <repository-url>
    cd emotion_recognition_app
    ```
-2. **Скопируйте шаблон переменных окружения**:
-
-   ```bash
-   cp env.template .env
-   ```
 3. **Запустите все сервисы**:
 
    ```bash
@@ -99,7 +94,7 @@
 ```
 
 2. **Настройка окружения**:
-   Создайте файл `.env` в директории `backend/` с URL вашей базы данных:
+   Создайте файл `.env` в директории `backend/` с URL вашей базы данных (по аналогии с файлом `.env.template`):
 
    ```
    DATABASE_URL=postgresql://user:password@localhost:5432/emotion_db
