@@ -2,7 +2,6 @@ from typing import Dict, List, Union, Tuple, Optional
 import math
 import logging
 
-# Configure logging
 logger = logging.getLogger(__name__)
 
 EmotionProbs = Dict[str, float]
@@ -199,57 +198,57 @@ def fuzzy_mood(
         elif dominant_emotion == "angry":
             rules.append(("четко выраженное раздражение.", max_prob))
         elif dominant_emotion == "neutral":
-            rules.append(("спокойное нейтральное настроение.", max_prob))
+            rules.append(("спокойное, нейтральное настроение.", max_prob))
 
     # Complex mood rules
     rules.append((
-        "негативный фон с раздражением.",
+        "раздраженное негативное настроение.",
         clip01(((p["sad"] + p["angry"]) - 0.50) / 0.20)
     ))
 
     rules.append((
-        "спокойное позитивное настроение.",
+        "спокойное, позитивное настроение.",
         min(approx_equal(p["neutral"], p["positive"]), low_ar_deg, pos_deg)
     ))
 
     rules.append((
-        "в основном нейтральное настроение.",
+        "преимущественно нейтральное настроение.",
         clip01((p["neutral"] - 0.60) / 0.20)
     ))
 
     rules.append((
-        "энергичное позитивное настроение.",
+        "бодрое, позитивное настроение.",
         min(clip01((p["positive"] - 0.60) / 0.20), hi_ar_deg)
     ))
 
     rules.append((
-        "подавленное настроение.",
+        "подавленное, унылое настроение.",
         min(clip01((p["sad"] - 0.40) / 0.20), soft_less(arousal, 0.40, 0.20))
     ))
 
     rules.append((
-        "напряженное, раздражительное настроение.",
+        "напряженное и раздражительное настроение.",
         min(clip01((p["angry"] - 0.40) / 0.20), hi_ar_deg)
     ))
 
     rules.append((
-        "противоречивое настроение.",
+        "смешанные противоречивые эмоции.",
         min(clip01((p["positive"] - 0.30) / 0.20), clip01((p["sad"] - 0.30) / 0.20))
     ))
 
     rules.append((
-        "оптимистичное с ноткой напряжения.",
+        "оптимистичное настроение с ноткой напряжения.",
         min(clip01((p["positive"] - 0.50) / 0.20), clip01((p["angry"] - 0.25) / 0.20))
     ))
 
     rules.append((
-        "теплое, уравновешенное спокойное настроение.",
+        "теплое, спокойное и уравновешенное настроение.",
         min(clip01((p["positive"] - 0.40) / 0.20), clip01((p["neutral"] - 0.30) / 0.20), 
             clip01((0.30 - (p["sad"] + p["angry"])) / 0.20))
     ))
 
     rules.append((
-        "неопределенное настроение со смешанными сигналами.",
+        "неопределенное настроение с разными эмоциями.",
         max(clip01((p["other"] - 0.50) / 0.20), clip01((0.35 - max_prob) / 0.15))
     ))
 
@@ -257,14 +256,13 @@ def fuzzy_mood(
     rules_sorted = sorted(rules, key=lambda x: x[1], reverse=True)
     best_label, best_score = rules_sorted[0]
 
-    # Improved fallback logic with Russian language consistency
     if best_score < FuzzyConfig.MIN_RULE_SCORE:
         if valence > 0.20:
-            best_label = "в общем положительное настроение."
+            best_label = "в целом положительное настроение."
         elif valence < -0.20:
-            best_label = "в общем грустное настроение."
+            best_label = "в целом грустное настроение."
         else:
-            best_label = "в общем нейтральное настроение."
+            best_label = "в целом нейтральное настроение."
 
     if return_details:
         return {
@@ -296,15 +294,6 @@ def _create_fallback_result(return_details: bool) -> Union[str, Dict[str, object
 
 
 def validate_emotion_model_compatibility(emotion_labels: List[str]) -> bool:
-    """
-    Validate that the emotion model is compatible with the fuzzy logic system.
-    
-    Args:
-        emotion_labels: List of emotion labels from the model
-        
-    Returns:
-        bool: True if compatible, False otherwise
-    """
     required_emotions = set(FuzzyConfig.VALENCE_MAP.keys())
     model_emotions = set(emotion_labels)
     
@@ -317,15 +306,6 @@ def validate_emotion_model_compatibility(emotion_labels: List[str]) -> bool:
 
 
 def get_emotion_statistics(segments: List[Segment]) -> Dict[str, float]:
-    """
-    Calculate statistics about emotion distribution across segments.
-    
-    Args:
-        segments: List of emotion segments
-        
-    Returns:
-        Dict with emotion statistics
-    """
     if not segments:
         return {}
     
