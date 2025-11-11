@@ -25,7 +25,7 @@ class AudioFile(Base):
     recognition = relationship("AudioEmotionRecognition", back_populates="audiofile", uselist=False, cascade="all, delete-orphan")
 
 class AudioEmotionRecognition(Base):
-    __tablename__ = 'audio_emotion_recognition'
+    __tablename__ = 'recognition_results'
     
     recognition_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     file_id = Column(UUID(as_uuid=True), ForeignKey('audio_files.file_id', ondelete='CASCADE'), nullable=False)
