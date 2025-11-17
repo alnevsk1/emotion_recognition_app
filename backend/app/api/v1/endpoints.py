@@ -49,7 +49,7 @@ def get_recognition_result(file_id: uuid.UUID, db: Session = Depends(get_db)):
 
 @router.get("/files/{file_id}/progress", response_model=schemas.RecognitionResultSchema)
 def get_recognition_progress(file_id: uuid.UUID, db: Session = Depends(get_db)):
-    recognition = db.query(models.AudioEmotionRecognition).filter_by(file_id=file_id).first()
+    recognition = db.query(models.RecognitionResult).filter_by(file_id=file_id).first()
     if not recognition:
         raise HTTPException(status_code=404, detail="Recognition record not found.")
     return recognition

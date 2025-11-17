@@ -45,10 +45,10 @@ if not fuzzy_logic.validate_emotion_model_compatibility(EMOTION_LABELS):
     raise RuntimeError("Emotion model is not compatible with fuzzy logic system")
 
 def create_initial_recognition_record(db, file_id):
-    existing = db.query(models.AudioEmotionRecognition).filter_by(file_id=file_id).first()
+    existing = db.query(models.RecognitionResult).filter_by(file_id=file_id).first()
     if not existing:
         placeholder_path = os.path.join(RESULTS_DIR, f"{file_id}.json")
-        db_rec = models.AudioEmotionRecognition(
+        db_rec = models.RecognitionResult(
             file_id=file_id,
             recognition_status=models.RecognitionStatusEnum.pending,
             recognition_path=placeholder_path
@@ -58,20 +58,20 @@ def create_initial_recognition_record(db, file_id):
 
 def update_recognition_status(db, file_id, status):
     """Helper function to update the status of a recognition record."""
-    recognition_record = db.query(models.AudioEmotionRecognition).filter_by(file_id=file_id).first()
+    recognition_record = db.query(models.RecognitionResult).filter_by(file_id=file_id).first()
     if recognition_record:
         recognition_record.recognition_status = status
         db.commit()
 
 def update_recognition_progress(db, file_id, progress):
     """Helper function to update the progress of a recognition record."""
-    recognition_record = db.query(models.AudioEmotionRecognition).filter_by(file_id=file_id).first()
+    recognition_record = db.query(models.RecognitionResult).filter_by(file_id=file_id).first()
     if recognition_record:
         recognition_record.progress = progress
         db.commit()
 
 def get_recognition_result_json(db, file_id):
-    recognition = db.query(models.AudioEmotionRecognition).filter_by(
+    recognition = db.query(models.RecognitionResult).filter_by(
         file_id=file_id,
         recognition_status=models.RecognitionStatusEnum.success
     ).first()
@@ -85,7 +85,7 @@ def get_recognition_result_json(db, file_id):
         return None
 
 def run_recognition_pipeline(db, file_id):
-    recognition_record = db.query(models.AudioEmotionRecognition).filter_by(file_id=file_id).first()
+    recognition_record = db.query(models.RecognitionResult).filter_by(file_id=file_id).first()
     audio_file = db.query(models.AudioFile).filter_by(file_id=file_id).first()
     if not recognition_record or not audio_file:
         return

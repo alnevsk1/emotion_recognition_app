@@ -22,9 +22,9 @@ class AudioFile(Base):
     file_extension = Column(String(10), CheckConstraint("file_extension IN ('mp3', 'wav')"), nullable=False)
     upload_date = Column(DateTime, server_default=func.current_timestamp(), nullable=False)
     
-    recognition = relationship("AudioEmotionRecognition", back_populates="audiofile", uselist=False, cascade="all, delete-orphan")
+    recognition = relationship("RecognitionResult", back_populates="audiofile", uselist=False, cascade="all, delete-orphan")
 
-class AudioEmotionRecognition(Base):
+class RecognitionResult(Base):
     __tablename__ = 'recognition_results'
     
     recognition_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
