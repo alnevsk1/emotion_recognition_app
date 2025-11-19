@@ -33,7 +33,6 @@ def request_recognition(file_id: uuid.UUID, background_tasks: BackgroundTasks, d
     if not audio_file:
         raise HTTPException(status_code=404, detail="Audio file not found.")
     
-    # Update status to "in_progress" immediately
     services.recognition.update_recognition_status(db=db, file_id=file_id, status="in_progress")
     
     background_tasks.add_task(services.recognition.run_recognition_pipeline, db=db, file_id=file_id)
