@@ -6,8 +6,7 @@ import numpy as np
 from datetime import datetime
 
 from app.db import models
-from app.db.session import SessionLocal
-from app.services import file_handler, fuzzy_logic
+from app.services import fuzzy_logic
 
 from transformers import AutoFeatureExtractor, AutoModelForAudioClassification
 
