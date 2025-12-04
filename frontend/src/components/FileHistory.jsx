@@ -1,4 +1,3 @@
-// src/components/FileHistory.jsx
 import React, { useState, useEffect } from 'react';
 import { startRecognition, getRecognitionProgress } from '../services/api';
 
@@ -68,7 +67,7 @@ const FileHistory = ({ files = [], onRecognizeStart, onSelectFile, onRefresh, is
   return (
     <>
       <div className="file-history-header">
-        <h3>Файлы</h3>
+        <h3>Загруженные файлы</h3>
         <button onClick={onRefresh} disabled={isLoading} className="refresh-btn">
           {isLoading ? 'Обновление...' : 'Обновить'}
         </button>
@@ -115,7 +114,7 @@ const FileHistory = ({ files = [], onRecognizeStart, onSelectFile, onRefresh, is
                     onSelectFile(file);
                   }}
                 >
-                  Посмотреть график
+                  Посмотреть результат
                 </button>
               )}
             </div>
