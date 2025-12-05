@@ -29,7 +29,7 @@ const FileUpload = ({ onUploadSuccess }) => {
 
   return (
     <div>
-      <h3>Загрузка аудио файла: .mp3 или .wav</h3>
+      <h3>Загрузка аудиофайла: .mp3 или .wav</h3>
       <input type="file" accept=".mp3,.wav" onChange={handleFileChange} />
       <button onClick={handleUpload} disabled={isUploading || !selectedFile}>
         {isUploading ? 'Загрузка...' : 'Загрузить'}

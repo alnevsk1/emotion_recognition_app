@@ -56,15 +56,15 @@
 1. **Клонируйте репозиторий** (если еще не сделано):
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/alnevsk1/emotion_recognition_app
    cd emotion_recognition_app
    ```
-3. **Запустите все сервисы**:
+2. **Запустите все сервисы**:
 
    ```bash
    docker-compose up --build
    ```
-4. **Доступ к приложению**:
+3. **Доступ к приложению**:
 
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8000
